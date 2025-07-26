@@ -1,0 +1,16 @@
+{
+  "debug_info": {
+    "full_text": "Ferrari {9\n\nF8 Tributo '19\n\nDrivetrain MR / Aspiration TC\nEngine Model F154CG-F8\n\nPerformance Points\n\nMax. Power\nMax. Torque\nDisplacement\n\nWeight\n\nFront-Rear Weight Balance\n\nBase Performance\n\nPP 697.60\n526 BHP\n60.8 kgfm\n3,902 cc\n1,405 kg\n44 : 56\n\nAcceleration Performance\n\n0-0.25 miles\n0-0.62 miles\n\n62-93 mph\n\nLow Speed\n\nHigh Speed\n\n40 mph\n75 mph\n\n150 mph\n\n10.75 sec.\n19.82 sec.\n\n2.12 sec.\nStability\n-0.13 (Neutral)\n\n-1.00 (Under)\nRotational G\n\n1.32 G\n1.40 G\n1.63 G\n\n@\u00ae Measure\n\nMeasurement\n\n@\n\n11\n\nHistory\n\n4p Ri\n\n697.60\n526\n60.8\n3,902\n1,405\n44 : 56\n\n10.75\n19.82\n2.72\n\n-0.13\n-1.00\n\n1.32\n1.40\n1.63\n\nable y\n\nRear\n\n95\n\n10\n\n28\n\n37\n3.50\n2.9\n#4.0.01\n\nable v\n\nRear\n\n14\n17\n12\n\n0: 100\n\nDownforce\n\nECU\n\nOutput Adjustment\n\nBallast\n\nBallast Positioning\n\nPower Restrictor\n\nTransmission\n\nAdjusted)\n\nNitrous/Overtake\n\nOutput Adjustment\n\nSettings Sheet 1\n\nwy6y\n\nECU\n\nrpm\n\nNormal\n\nSports\n\n8,755\n\nManual Adjustment eee\n\nNitrous/Overtake\n\nNone\n\n%\n\n* Edit Settings Sheet\n\n526 Supercharger\n\ncharger Normal\nz ag None\n\n.ag System hii\n\nooler Normal\n\n\u2018charger None\n\nIntake & Exhaust\n\neaner Normal\n\n>er Normal\n\nist Manifold Normal >\n\nBrakes\n\n\u00bb System Racing (Slotted Di:\nBrake Pads Racing\nHandbrake Normal\n\nHandbrake Torque\n\nBrake Balance\n\nFront/Rear Balance\n\n%\n\nBrake Controller\n\n\u2018\u00a9 2025 Sony Interactive Entertainment Inc. Developed by Polyphony Digital inc.\n",
+    "power_hp": "526",
+    "torque_kgfm": "VvevVU\n60.8",
+    "min_rpm": "|\nF 1,000",
+    "max_rpm": "8,755",
+    "max_power_rpm_region": "\u2014\u2014\u2014 WA N\\ vU\n(\ndjustment\n=== OG rpm 8,755\n= <\u2014_ Normal F"
+  },
+  "results": {
+    "power_hp": 526,
+    "torque_kgfm": 60.8,
+    "min_rpm": 1000,
+    "max_rpm": 8755
+  }
+}

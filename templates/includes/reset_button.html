@@ -1,0 +1,29 @@
+<!-- Reset button partial for inclusion in templates -->
+<button type="button" id="resetFormBtn" class="btn btn-outline-warning">
+    <i class="bi bi-arrow-repeat"></i> Reset Form
+</button>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const resetFormBtn = document.getElementById('resetFormBtn');
+        if (resetFormBtn) {
+            resetFormBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset the form? All unsaved changes will be lost.')) {
+                    // Find the form
+                    const form = document.querySelector('form');
+                    if (form) {
+                        // Reset the form
+                        form.reset();
+                        
+                        // Dispatch an event that can be caught by form handlers
+                        const resetEvent = new CustomEvent('formReset', {
+                            bubbles: true,
+                            detail: { formId: form.id }
+                        });
+                        form.dispatchEvent(resetEvent);
+                    }
+                }
+            });
+        }
+    });
+</script>

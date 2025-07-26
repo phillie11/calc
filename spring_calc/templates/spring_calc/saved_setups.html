@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saved Setups - GT7 Tuning{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/saved_setups.css' %}">
+{% endblock %}
+
+created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-dark border-secondary">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Saved Setups</h3>
+                <div>
+                    <a href="{% url 'upload_screenshot' %}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-camera"></i> Upload Screenshots
+                    </a>
+                    <a href="{% url 'calculate_springs' %}" class="btn btn-sm btn-outline-primary ms-2">
+                        <i class="bi bi-plus-circle"></i> New Setup
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if setups %}
+                <div class="row">
+                    {% for setup in setups %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="saved-setup-card">
+                            <div class="setup-header">
+                                <h4 class="setup-name">{{ setup.name }}</h4>
+                                <div class="setup-vehicle">{{ setup.vehicle.name }}</div>
+                                <div class="setup-date">{{ setup.date_saved|date:"F j, Y" }}</div>
+                            </div>
+                            <div class="setup-details">
+                                {% if setup.spring_calculation %}
+                                <div class="setup-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-label">Spring Rate F/R:</div>
+                                        <div class="stat-value">{{ setup.spring_calculation.front_spring_rate }}/{{ setup.spring_calculation.rear_spring_rate }}</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">ARB F/R:</div>
+                                        <div class="stat-value">{{ setup.spring_calculation.front_roll_bar }}/{{ setup.spring_calculation.rear_roll_bar }}</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">Camber F/R:</div>
+                                        <div class="stat-value">{{ setup.spring_calculation.front_camber }}/{{ setup.spring_calculation.rear_camber }}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if setup.gear_calculation %}
+                                <div class="setup-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-label">Final Drive:</div>
+                                        <div class="stat-value">{{ setup.gear_calculation.final_drive }}</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">Top Speed:</div>
+                                        <div class="stat-value">{{ setup.gear_calculation.top_speed_calculated|floatformat:1 }} mph</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">0-60 mph:</div>
+                                        <div class="stat-value">{{ setup.gear_calculation.acceleration_estimate }} sec</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if setup.notes %}
+                                <div class="setup-notes">
+                                    <div class="notes-label">Notes:</div>
+                                    <div class="notes-content">{{ setup.notes }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="setup-actions">
+                                <form method="post" action="{% url 'load_setup' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="setup_id" value="{{ setup.id }}">
+                                    <button type="submit" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-download"></i> Load Setup
+                                    </button>
+                                </form>
+                                <button type="button" class="btn btn-danger btn-sm delete-setup-btn" data-bs-toggle="modal" data-bs-target="#deleteSetupModal" data-setup-id="{{ setup.id }}" data-setup-name="{{ setup.name }}">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-save2 empty-icon"></i>
+                    </div>
+                    <h4>No Saved Setups</h4>
+                    <p class="text-muted">You haven't saved any vehicle setups yet.</p>
+                    <div class="mt-4">
+                        <a href="{% url 'calculate_springs' %}" class="btn btn-primary">Create New Setup</a>
+                        <a href="{% url 'upload_screenshot' %}" class="btn btn-outline-info ms-3">Upload Screenshots</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Setup Confirmation Modal -->
+<div class="modal fade" id="deleteSetupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Delete Setup</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the setup "<span id="setupNameToDelete"></span>"?</p>
+                <p class="text-danger">This action cannot be undone!</p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'delete_setup' %}" id="deleteSetupForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="setup_id" id="setupIdToDelete">
+                    <button type="submit" class="btn btn-danger">Delete Setup</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle delete setup modal
+        const deleteSetupModal = document.getElementById('deleteSetupModal');
+        if (deleteSetupModal) {
+            deleteSetupModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                const setupId = button.getAttribute('data-setup-id');
+                const setupName = button.getAttribute('data-setup-name');
+                
+                document.getElementById('setupIdToDelete').value = setupId;
+                document.getElementById('setupNameToDelete').textContent = setupName;
+            });
+        }
+    });
+function saveSetup() {
+    const setupName = document.getElementById('setupName').value;
+    const setupNotes = document.getElementById('setupNotes').value;
+    
+    if (!setupName || setupName.trim() === '') {
+        alert("Please enter a name for your setup");
+        return false;
+    }
+    
+    // Get current setup data
+    const setupData = {
+        name: setupName,
+        notes: setupNotes,
+        spring_calculation_id: "{{ spring_calculation.id|default:'' }}",
+        gear_calculation_id: "{{ gear_calculation.id|default:'' }}"
+    };
+    
+    // Send data to save endpoint
+    fetch('{% url "save_setup" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(setupData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('saveSetupModal'));
+            if (modal) modal.hide();
+            
+            // Show success message
+            alert("Setup saved successfully!");
+            return true;
+        } else {
+            alert("Error saving setup: " + data.error);
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('Error saving setup:', error);
+        alert("An error occurred while saving the setup.");
+        return false;
+    });
+}
+
+// Update the confirmSaveBtn event listener
+document.addEventListener('DOMContentLoaded', function() {
+    const saveSetupBtn = document.getElementById('saveSetupBtn');
+    if (saveSetupBtn) {
+        saveSetupBtn.addEventListener('click', function() {
+            // Open the save modal
+            const saveModal = new bootstrap.Modal(document.getElementById('saveSetupModal'));
+            saveModal.show();
+        });
+    }
+    
+    const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+    if (confirmSaveBtn) {
+        confirmSaveBtn.addEventListener('click', saveSetup);
+    }
+});
+</script>
+{% endblock %}
+ class="stat-item">
+                                        <div

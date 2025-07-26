@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div id="gt7-dashboard-root"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/gt7_dashboard.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const root = document.getElementById('gt7-dashboard-root');
+    if (root) {
+        ReactDOM.render(React.createElement(GT7Dashboard), root);
+    }
+});
+</script>
+{% endblock %}

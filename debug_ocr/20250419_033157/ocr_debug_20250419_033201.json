@@ -1,0 +1,16 @@
+{
+  "debug_info": {
+    "full_text": "Ferrari\n\nF8 Tributo '19\nDrivetrain MR / Aspiration TC\nEngine Model F154CG-F8\n\nBase Performance\n\nPerformance Points PP 697.60\nMax. Power 526 BHP\nMax. Torque 60.8 kgim\nDisplacement 3,902 cc\nWeight 1,405 kg\nFront-Rear Weight Balance 44 : 56\n\nAcceleration Performance\n\n0-0.25 miles 10.75 sec.\n0-0.62 miles 19.82 sec.\n62-93 mph 2.12 sec.\nStability\nLow Speed -0.13 (Neutral)\nHigh Speed -1.00 (Under)\nRotational G\n40 mph 1.326\n75 mph 1.40G\n150 mph 1.63 G\n\n@\u00ae Measure\n\nMeasurement\n\n1)\nLi\n\nHistory\n\na b>\n\nR1\n\n1st\n2nd\n3rd\n4th\n5th\n6th\n\n7th\n\nFinal\n\n-1.00\n\n1.32\n1.40\n1.63\n\nSettings Sheet 1\n\nAerodynamics\nFront Rear\nv\nDownforce Lv. 300 500\n\u2019 ECU\nECU Fully Customisable \u00a5.\n. 7 77\nManual Adjustment\n2.695 / roa Sa 75\n2.084 / 142 -46\n1.766 / 167 Yi i 91\n1.497 / 197 =e\n1.268 / 233 )\n1.075 / 275 340\n0.911 / 345 =\n3.626 M\n0\n17\n12\n0: 100\n\n+ Edit Settings Sheet\n\nTurbocharger\nAnti-Lag\nAnti-Lag System\nIntercooler\n\nSupercharger\n\nAir Cleaner\n\nSilencer\n\nExhaust Manifold\n\nSupercharger\n\nNormal\nNone\nOff\nNormal\n\nNone\n\nIntake & Exhaust\n\nNormal\nNormal\n\nNormal\n\n>\n\nBrake System\n\nBrake Pads\n\nHandbrake\n\nHandbrake Torque\n\nBrake Balance\n\nFront/Rear Balance\n\nBrakes\n\nRacing (Slotted Di:\n\nRacing\n\nNormal\n\n%\n\nBrake Controller\n\n\u2018\u00a9 2025 Sony Interactive Entertainment Inc. Developed by Polyphony Digital inc.\n",
+    "gear_ratio": "1.766",
+    "rpm": "OAAN",
+    "speed": "167",
+    "final_drive": "3.626",
+    "gear_section": "1st |\n2nd\n3rd\n4th\n5th\n6th\n7th"
+  },
+  "results": {
+    "gear_ratio": 1.766,
+    "speed": 167,
+    "final_drive": 3.626,
+    "gear_section": 7
+  }
+}

@@ -1,0 +1,130 @@
+/* Home page styles for GT7 Tuning App */
+
+/* Hero section */
+.display-4 {
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(90deg, #007bff, #00c6ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.lead {
+    font-size: 1.35rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Feature cards */
+.feature-icon {
+    display: inline-block;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.card-hover:hover .feature-icon {
+    transform: scale(1.1);
+}
+
+.card {
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.card:hover::before {
+    transform: translateX(100%);
+}
+
+.card-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.card-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Quick start guide */
+.guide-steps {
+    counter-reset: step-counter;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.guide-steps li {
+    position: relative;
+    padding: 0 0 1.5rem 3rem;
+    counter-increment: step-counter;
+}
+
+.guide-steps li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2rem;
+    height: 2rem;
+    line-height: 2rem;
+    text-align: center;
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+}
+
+.guide-steps li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 2.5rem;
+    height: calc(100% - 2.5rem);
+    width: 2px;
+    background-color: rgba(0, 123, 255, 0.3);
+    transform: translateX(-50%);
+}
+
+.guide-steps h5 {
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.guide-steps p {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Call-to-action section */
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .lead {
+        font-size: 1.15rem;
+    }
+    
+    .guide-steps li {
+        padding-left: 2.5rem;
+    }
+}

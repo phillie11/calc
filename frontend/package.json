@@ -1,0 +1,26 @@
+{
+  "name": "gt7-tuning-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "webpack --mode production",
+    "build-dev": "webpack --mode development",
+    "watch": "webpack --watch --mode development"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.5.0",
+    "lucide-react": "^0.279.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.10",
+    "@babel/preset-react": "^7.22.5",
+    "@types/react": "^18.2.20",
+    "@types/react-dom": "^18.2.7",
+    "babel-loader": "^9.1.3",
+    "typescript": "^5.1.6",
+    "ts-loader": "^9.4.4",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  }
+}

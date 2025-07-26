@@ -1,0 +1,187 @@
+/* Calculator page styles for GT7 Tuning App */
+
+/* Form sections */
+.form-section {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.75rem;
+}
+
+/* Form inputs */
+.form-label {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.form-control, .form-select {
+    font-size: 0.95rem;
+}
+
+/* Help text */
+.form-text {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* Form actions */
+.form-actions {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Results section */
+.results-section {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 1.25rem;
+    height: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.results-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.1);
+}
+
+.result-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.result-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
+.result-value {
+    color: #fff;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+}
+
+/* Visualizations */
+#powerCurveGraph, #gearGraph {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Tire size modal */
+#tireSizeModal .modal-body {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+#tireSizeResult {
+    font-weight: 500;
+}
+
+/* Description classes for adjustments */
+.setting-description {
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+/* Loading states */
+.loading::after {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    border: 0.15em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner 0.75s linear infinite;
+    margin-left: 0.5rem;
+}
+
+@keyframes spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Value ranges for sliders */
+.range-values {
+    display: flex;
+    justify-content: space-between;
+    margin-top: -0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.range-values .min-value {
+    text-align: left;
+}
+
+.range-values .max-value {
+    text-align: right;
+}
+
+/* Information tables */
+.specs-table {
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.specs-table th, .specs-table td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.specs-table th {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.specs-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .form-section {
+        padding: 1rem;
+    }
+    
+    .results-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .result-label, .result-value {
+        font-size: 0.9rem;
+    }
+}

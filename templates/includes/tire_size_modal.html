@@ -1,0 +1,64 @@
+<!-- Tire Size Calculator Modal -->
+<div class="modal fade" id="tireSizeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Calculate Tire Size</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Enter the following values to calculate your tire diameter:</p>
+                
+                <div class="mb-3">
+                    <label for="speedInput" class="form-label">Speed (km/h)</label>
+                    <input type="number" class="form-control" id="speedInput" placeholder="120" min="1" max="500" step="0.1">
+                    <div class="form-text">Current speed in km/h</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="rpmInput" class="form-label">Engine RPM</label>
+                    <input type="number" class="form-control" id="rpmInput" placeholder="5000" min="1000" max="12000">
+                    <div class="form-text">Current engine RPM</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="gearRatioInput" class="form-label">Gear Ratio</label>
+                    <input type="number" class="form-control" id="gearRatioInput" placeholder="1.050" min="0.1" max="5" step="0.001">
+                    <div class="form-text">Current gear ratio</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="finalDriveInput" class="form-label">Final Drive</label>
+                    <input type="number" class="form-control" id="finalDriveInput" placeholder="3.700" min="2" max="6" step="0.001">
+                    <div class="form-text">Final drive ratio</div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> <strong>Tip:</strong> Take a screenshot in GT7 when driving at a constant speed in a straight line. Use the transmission settings page to find the current gear ratio and final drive.
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <div id="tireSizeResult" class="me-auto"></div>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="calculateTireSizeBtn">Calculate</button>
+                <button type="button" class="btn btn-success d-none" id="applyTireSizeBtn">Apply to Form</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // References to elements
+        const calculateBtn = document.getElementById('calculateTireSizeBtn');
+        const applyBtn = document.getElementById('applyTireSizeBtn');
+        const resultDiv = document.getElementById('tireSizeResult');
+        
+        // Extract value from URL parameters if available
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('gear_ratio')) document.getElementById('gearRatioInput').value = params.get('gear_ratio');
+        if (params.has('rpm')) document.getElementById('rpmInput').value = params.get('rpm');
+        if (params.has('speed')) document.getElementById('speedInput').value = params.get('speed');
+        if (params.has('final_drive')) document.getElementById('finalDriveInput').value = params.get('final_drive');
+    });
+</script>

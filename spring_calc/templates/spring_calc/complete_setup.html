@@ -1,0 +1,1029 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% csrf_token %}
+
+{% block title %}GT Pro Tune - Complete Setup{% endblock %}
+{% block content %}
+<style>
+    /* Custom styles for GT7-like interface */
+    .gt7-results {
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+    
+    .gt7-results .bg-dark {
+        background-color: #1a1a1a !important;
+        font-size: 22px;
+        font-weight: bold;
+    }
+    
+    .gt7-results .text-secondary {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    .gt7-results h4 {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .gear-graph-container {
+        background-color: #000;
+        height: 300px;
+        border-radius: 4px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .graph-line {
+        stroke: #00a8ff;
+        stroke-width: 2;
+        fill: none;
+    }
+    
+    .gear-line {
+        stroke: rgba(255, 255, 255, 0.4);
+        stroke-width: 1;
+        stroke-dasharray: 3;
+    }
+    
+    .graph-axis {
+        stroke: rgba(255, 255, 255, 0.2);
+        stroke-width: 1;
+    }
+    
+    .graph-label {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+    }
+    
+    .setup-header {
+        background-color: #111;
+        border-bottom: 2px solid #333;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .print-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+    }
+    
+    @media print {
+        body {
+            background-color: white !important;
+            color: black !important;
+        }
+        
+        .gt7-results {
+            color: black !important;
+        }
+        
+        .gt7-results .bg-dark {
+            background-color: #eee !important;
+            color: black !important;
+            border: 1px solid #ccc;
+        }
+        
+        .gt7-results .text-secondary {
+            color: #333 !important;
+        }
+        
+        .setup-header {
+            background-color: white !important;
+            border-bottom: 2px solid black;
+        }
+        
+        .no-print {
+            display: none !important;
+        }
+        
+        nav, footer, .print-btn {
+            display: none !important;
+        }
+        
+        .card {
+            border: 1px solid black !important;
+            break-inside: avoid !important;
+        }
+        
+        .card-header {
+            background-color: #eee !important;
+            color: black !important;
+            border-bottom: 1px solid black !important;
+        }
+    }
+</style>
+
+{% if debug %}
+<div class="alert alert-info">
+    <h5>Debug Information</h5>
+    <p><strong>Has gear_calculation:</strong> {% if gear_calculation %}Yes{% else %}No{% endif %}</p>
+    {% if gear_calculation %}
+    <p><strong>Gear Ratios:</strong> {{ gear_calculation.gear_ratios }}</p>
+    <p><strong>Final Drive:</strong> {{ gear_calculation.final_drive }}</p>
+    <p><strong>Min RPM:</strong> {{ gear_calculation.min_rpm }}</p>
+    <p><strong>Max RPM:</strong> {{ gear_calculation.max_rpm }}</p>
+    <p><strong>Tire Diameter:</strong> {{ gear_calculation.tire_diameter_inches }}</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 offset-lg-1">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">Complete Vehicle Setup</h1>
+                    <div>
+                        <a href="{% url 'calculate_springs' %}" class="btn btn-sm btn-light me-2 no-print">Edit Suspension</a>
+                        <a href="{% url 'calculate_gears' %}" class="btn btn-sm btn-light no-print">Edit Gears</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="setup-header text-center">
+                        <h2 class="text-white">{{ vehicle_name }}</h2>
+                        {% if spring_calculation and spring_calculation.performance_points %}
+                            <span class="badge bg-warning text-dark fs-5">PP: {{ spring_calculation.performance_points }}</span>
+                        {% endif %}
+                        <p class="text-secondary mt-2">Setup generated on {% now "F j, Y" %}</p>
+                    </div>
+                    
+                    {% if not spring_calculation and not gear_calculation %}
+                        <div class="alert alert-warning text-center">
+                            <p>No calculation results found. Please complete at least one calculation.</p>
+                            <div class="mt-3">
+                                <a href="{% url 'calculate_springs' %}" class="btn btn-primary me-2">Suspension Calculator</a>
+                                <a href="{% url 'calculate_gears' %}" class="btn btn-primary">Gear Calculator</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <!-- Suspension Settings -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-dark text-white">
+                                        <h3 class="text-center mb-0">Suspension Settings</h3>
+                                    </div>
+                                    <div class="card-body" style="background-color: #000000; padding: 20px;">
+                                        {% if spring_calculation %}
+                                            <div class="gt7-results">
+
+                                                <!-- Ride Height -->
+                                                <h4 class="text-white mb-3">Ride Height (mm)</h4>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Front</span>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Rear</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.front_ride_height }}</div>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.rear_ride_height }}</div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Spring Frequency -->
+                                                <h4 class="text-white mb-3">Spring Frequency (Hz)</h4>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Front</span>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Rear</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.front_spring_frequency }}</div>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.rear_spring_frequency }}</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Dampers -->
+                                                <h4 class="text-white mb-3">Dampers</h4>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Front</span>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Rear</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-12">
+                                                        <span class="text-secondary">Compression</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ front_compression }}</div>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ rear_compression }}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-12">
+                                                        <span class="text-secondary">Extension</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ front_extension }}</div>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ rear_extension }}</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Anti-Roll Bars -->
+                                                <h4 class="text-white mb-3">Anti-Roll Bars</h4>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Front</span>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Rear</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.front_roll_bar|floatformat:"0" }}</div>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.rear_roll_bar|floatformat:"0" }}</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Alignment -->
+                                                <h4 class="text-white mb-3">Alignment</h4>
+                                                <div class="row mb-2">
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Front</span>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <span class="text-secondary">Rear</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-12">
+                                                        <span class="text-secondary">Camber (°)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.front_camber|floatformat:"1" }}</div>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.rear_camber|floatformat:"1" }}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-12">
+                                                        <span class="text-secondary">Toe (°)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.front_toe|floatformat:"2" }}</div>
+                                                    </div>
+                                                    <div class="col-6 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ spring_calculation.rear_toe|floatformat:"2" }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center py-5">
+                                                <p class="text-secondary">No suspension data available</p>
+                                                <a href="{% url 'calculate_springs' %}" class="btn btn-primary mt-3 no-print">Calculate Suspension</a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Gear Settings -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-dark text-white">
+                                        <h3 class="text-center mb-0">Transmission Settings</h3>
+                                    </div>
+                                    <div class="card-body" style="background-color: #000000; padding: 20px;">
+                                        {% if gear_calculation %}
+                                            <div class="gt7-results">
+                                                <!-- Final Drive -->
+                                                <h4 class="text-white mb-3">Final Drive</h4>
+                                                <div class="row mb-3">
+                                                    <div class="col-12 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ gear_calculation.final_drive }}</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Gear Ratios -->
+                                                <h4 class="text-white mb-3">Gear Ratios</h4>
+                                                {% for gear_name, ratio in gear_calculation.gear_ratios.items %}
+                                                <div class="row mb-1">
+                                                    <div class="col-6">
+                                                        <span class="text-secondary">{{ gear_name }}</span>
+                                                    </div>
+                                                    <div class="col-6 text-end">
+                                                        <span class="text-secondary">
+                                                            {% for g_name, speed in gear_speeds.items %}
+                                                                {% if g_name == gear_name %}
+                                                                    {{ speed }} mph
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-12 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ ratio }}</div>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                                
+                                                <!-- Engine Stats -->
+                                                <h4 class="text-white mb-3">Engine Data</h4>
+                                                <div class="row mb-1">
+                                                    <div class="col-12">
+                                                        <span class="text-secondary">Power</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-12 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ gear_calculation.power_hp }} HP @ {{ gear_calculation.max_power_rpm }} RPM</div>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-1">
+                                                    <div class="col-12">
+                                                        <span class="text-secondary">Torque</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-12 text-center">
+                                                        <div class="bg-dark p-2 rounded">{{ gear_calculation.torque_kgfm }} kg·m</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Gear Graph -->
+                                                <h4 class="text-white mb-3 mt-4">Gear Graph</h4>
+<div class="gear-graph-container" id="gearGraph" style="height: 300px; width: 100%; background-color: #000; border-radius: 4px; position: relative;">
+    <div id="graphFallback" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #555; text-align: center;">
+        <p>Gear graph loading...</p>
+    </div>
+</div>
+                                                                                                                                                                                                                                                <h4 class="text-white mb-3 mt-4">Power & Torque Curves</h4>
+                                                <div id="powerCurveGraph" style="height: 400px; width: 100%; background-color: #000; border-radius: 4px; position: relative;">
+                                                    <div id="powerGraphFallback" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #555; text-align: center;">
+                                                        <p>Loading power and torque curves...</p>
+                                                        <p>(If this message persists, check the JavaScript console for errors)</p>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center py-5">
+                                                <p class="text-secondary">No transmission data available</p>
+                                                <a href="{% url 'calculate_gears' %}" class="btn btn-primary mt-3 no-print">Calculate Gear Ratios</a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Information -->
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-dark text-white">
+                                        <h3 class="text-center mb-0">Additional Information</h3>
+                                    </div>
+                                    <div class="card-body" style="background-color: #000000; padding: 20px;">
+                                        <div class="gt7-results">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <h4 class="text-white mb-3">Vehicle Specifications</h4>
+                                                    <div class="row mb-1">
+                                                        <div class="col-12">
+                                                            <span class="text-secondary">Vehicle Weight</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-12 text-center">
+                                                            <div class="bg-dark p-2 rounded">
+                                                                {% if spring_calculation %}
+                                                                    {{ spring_calculation.vehicle_weight }} kg
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="row mb-1">
+                                                        <div class="col-12">
+                                                            <span class="text-secondary">Weight Distribution</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-12 text-center">
+                                                            <div class="bg-dark p-2 rounded">
+                                                                {% if spring_calculation %}
+                                                                    {{ spring_calculation.front_weight_distribution }}% Front / {{ 100|sub:spring_calculation.front_weight_distribution }}% Rear
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="row mb-1">
+                                                        <div class="col-12">
+                                                            <span class="text-secondary">Drivetrain</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-12 text-center">
+                                                            <div class="bg-dark p-2 rounded">
+                                                                {% if vehicle.drivetrain %}
+                                                                    {{ vehicle.get_drivetrain_display }}
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-6 mb-3">
+                                                    <h4 class="text-white mb-3">Track Settings</h4>
+                                                    <div class="row mb-1">
+                                                        <div class="col-12">
+                                                            <span class="text-secondary">Track Type</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-12 text-center">
+                                                            <div class="bg-dark p-2 rounded">
+                                                                {% if spring_calculation %}
+                                                                    {{ spring_calculation.track_type }}
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="row mb-1">
+                                                        <div class="col-12">
+                                                            <span class="text-secondary">Downforce (Front/Rear)</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-12 text-center">
+                                                            <div class="bg-dark p-2 rounded">
+                                                                {% if spring_calculation %}
+                                                                    {{ spring_calculation.front_downforce }} / {{ spring_calculation.rear_downforce }}
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="row mb-1">
+                                                        <div class="col-12">
+                                                            <span class="text-secondary">Tires (Front/Rear)</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row mb-3">
+                                                        <div class="col-12 text-center">
+                                                            <div class="bg-dark p-2 rounded">
+                                                                {% if spring_calculation %}
+                                                                    {{ spring_calculation.front_tires }} / {{ spring_calculation.rear_tires }}
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Setup Notes -->
+                                            <div class="row mt-4">
+                                                <div class="col-12">
+                                                    <h4 class="text-white mb-3">Setup Notes</h4>
+                                                    <div class="bg-dark p-3 rounded">
+                                                        <p>This setup was generated by GT Pro Tune on {% now "F j, Y" %}</p>
+                                                        <p>Vehicle: {{ vehicle_name }}</p>
+                                                        {% if spring_calculation and spring_calculation.performance_points %}
+                                                            <p>Performance Points: {{ spring_calculation.performance_points }}</p>
+                                                        {% endif %}
+                                                        <p>Handling characteristics: 
+                                                            {% if spring_calculation and spring_calculation.ou_adjustment < 0 %}
+                                                                Understeer biased ({{ spring_calculation.ou_adjustment }})
+                                                            {% elif spring_calculation and spring_calculation.ou_adjustment > 0 %}
+                                                                Oversteer biased (+{{ spring_calculation.ou_adjustment }})
+                                                            {% elif spring_calculation %}
+                                                                Neutral
+                                                            {% else %}
+                                                                N/A
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- In complete_setup.html -->
+<div class="d-flex justify-content-center mb-4 no-print">
+    <!-- Replace the existing startNewSetupBtn with this implementation -->
+    <button id="startNewSetupBtn" class="btn btn-info btn-lg me-3">
+        <i class="bi bi-plus-circle"></i> Start New Setup
+    </button>
+    
+    <!-- Keep other buttons the same -->
+    <button id="saveSetupBtn" class="btn btn-primary btn-lg me-3">
+        <i class="bi bi-save"></i> Save Setup
+    </button>
+    <button onclick="window.print()" class="btn btn-success btn-lg">
+        <i class="bi bi-printer"></i> Print / Save PDF
+    </button>
+</div>
+<div class="modal fade" id="saveSetupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title">Save Setup</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="setupName" class="form-label">Setup Name</label>
+                    <input type="text" class="form-control" id="setupName" placeholder="My Awesome Setup">
+                </div>
+                <div class="mb-3">
+                    <label for="setupNotes" class="form-label">Notes (optional)</label>
+                    <textarea class="form-control" id="setupNotes" rows="3" placeholder="Any notes about this setup..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSaveBtn">Save Setup</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Print Button -->
+<button onclick="window.print()" class="btn btn-success btn-lg print-btn no-print">
+    <i class="bi bi-printer"></i> Print / Save PDF
+</button>
+{% endblock %}
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add handler for the Start New Setup button
+    const startNewSetupBtn = document.getElementById('startNewSetupBtn');
+    if (startNewSetupBtn) {
+        startNewSetupBtn.addEventListener('click', function() {
+            // Show a custom confirmation dialog asking about saving
+            const saveFirst = confirm('Would you like to save your current setup before starting a new one?');
+            
+            if (saveFirst) {
+                // If user wants to save first, show the save modal
+                const saveModal = new bootstrap.Modal(document.getElementById('saveSetupModal'));
+                saveModal.show();
+                
+                // Find the save button in the modal
+                const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+                if (confirmSaveBtn) {
+                    // Store the original click handler
+                    const originalOnClick = confirmSaveBtn.onclick;
+                    
+                    // Replace with a new handler that saves then resets
+                    confirmSaveBtn.onclick = function() {
+                        // Get setup data
+                        const setupName = document.getElementById('setupName').value;
+                        const setupNotes = document.getElementById('setupNotes').value;
+                        
+                        if (!setupName || setupName.trim() === '') {
+                            alert("Please enter a name for your setup");
+                            return;
+                        }
+                        
+                        // Create form data for the request
+                        const formData = new FormData();
+                        formData.append('name', setupName);
+                        formData.append('notes', setupNotes);
+                        
+                        {% if spring_calculation %}
+                        formData.append('spring_calculation_id', '{{ spring_calculation.id }}');
+                        {% endif %}
+                        
+                        {% if gear_calculation %}
+                        formData.append('gear_calculation_id', '{{ gear_calculation.id }}');
+                        {% endif %}
+                        
+                        formData.append('reset_after_save', 'true');
+                        
+                        // Get CSRF token
+                        const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+                        
+                        // Make AJAX request
+                        fetch('{% url "save_setup" %}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: formData
+                        })
+                        .then(response => {
+                            // After successful save, reset all data
+                            resetAndRedirect();
+                        })
+                        .catch(error => {
+                            console.error('Error saving setup:', error);
+                            alert('Error saving setup. Please try again.');
+                        });
+                    };
+                }
+            } else {
+                // If user doesn't want to save, just reset data
+                resetAndRedirect();
+            }
+        });
+    }
+    
+    // Function to reset all data and redirect
+    function resetAndRedirect() {
+        // Create form data for reset request
+        const formData = new FormData();
+        formData.append('redirect_url', '/spring-calculator/upload-screenshot/');
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+        
+        // Make AJAX request to reset all data
+        fetch('/spring-calculator/reset-all-data/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => {
+            // Redirect to upload page
+            window.location.href = '/spring-calculator/upload-screenshot/';
+        })
+        .catch(error => {
+            console.error('Error resetting data:', error);
+            alert('Error resetting data. Please try again.');
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Save Setup button click
+    const saveSetupBtn = document.getElementById('saveSetupBtn');
+    if (saveSetupBtn) {
+        saveSetupBtn.addEventListener('click', function() {
+            // Show the save modal
+            const saveModal = new bootstrap.Modal(document.getElementById('saveSetupModal'));
+            saveModal.show();
+        });
+    }
+    
+    // Handle Confirm Save button click
+    const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+    if (confirmSaveBtn) {
+        confirmSaveBtn.addEventListener('click', function() {
+            // Get setup data
+            const setupName = document.getElementById('setupName').value;
+            const setupNotes = document.getElementById('setupNotes').value;
+            
+            if (!setupName || setupName.trim() === '') {
+                alert("Please enter a name for your setup");
+                return;
+            }
+            
+            // Show loading state
+            confirmSaveBtn.disabled = true;
+            confirmSaveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+            
+            // Create request data
+            const data = {
+                name: setupName,
+                notes: setupNotes
+            };
+            
+            {% if spring_calculation %}
+            data.spring_calculation_id = {{ spring_calculation.id }};
+            {% endif %}
+            
+            {% if gear_calculation %}
+            data.gear_calculation_id = {{ gear_calculation.id }};
+            {% endif %}
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+            
+            // Send AJAX request
+            fetch('{% url "save_setup" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button state
+                confirmSaveBtn.disabled = false;
+                confirmSaveBtn.textContent = 'Save Setup';
+                
+                if (data.success) {
+                    // Show success message
+                    alert('Setup saved successfully!');
+                    
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('saveSetupModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Redirect to saved setups page
+                    window.location.href = '{% url "saved_setups" %}';
+                } else {
+                    // Show error message
+                    alert('Error saving setup: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error saving setup:', error);
+                
+                // Reset button state
+                confirmSaveBtn.disabled = false;
+                confirmSaveBtn.textContent = 'Save Setup';
+                
+                // Show error message
+                alert('Error saving setup. Please try again.');
+            });
+        });
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the gear data from the context
+    const gearData = {% if gear_graph_data %}{{ gear_graph_data|safe }}{% else %}null{% endif %};
+    
+    // Only try to render if we have gear data
+    if (gearData && gearData.gearRatios && gearData.finalDrive) {
+        console.log("Rendering gear graph with data:", gearData);
+        renderGearGraph(gearData);
+    } else {
+        console.log("No gear data available for graph rendering");
+        const container = document.getElementById('gearGraph');
+        if (container) {
+            container.innerHTML = '<div class="text-center py-4 text-muted">No gear data available</div>';
+        }
+    }
+});
+</script>
+
+<script>
+function renderGearGraph(data) {
+    try {
+        console.log("Rendering gear graph with data:", data);
+        
+        // Validate required data
+        if (!data || !data.gearRatios || !data.finalDrive || !data.maxRPM || !data.minRPM) {
+            throw new Error("Missing required gear data");
+        }
+        
+        const container = document.getElementById('gearGraph');
+        if (!container) {
+            throw new Error("Gear graph container not found");
+        }
+        
+        const width = container.clientWidth || 800;
+        const height = container.clientHeight || 300;
+        
+        // Create SVG element
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        
+        // Add axes
+        const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        xAxis.setAttribute('x1', '50');
+        xAxis.setAttribute('y1', height - 30);
+        xAxis.setAttribute('x2', width - 30);
+        xAxis.setAttribute('y2', height - 30);
+        xAxis.setAttribute('stroke', 'rgba(255, 255, 255, 0.2)');
+        svg.appendChild(xAxis);
+        
+        const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        yAxis.setAttribute('x1', '50');
+        yAxis.setAttribute('y1', '30');
+        yAxis.setAttribute('x2', '50');
+        yAxis.setAttribute('y2', height - 30);
+        yAxis.setAttribute('stroke', 'rgba(255, 255, 255, 0.2)');
+        svg.appendChild(yAxis);
+        
+        // Add axis labels
+        const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        xLabel.setAttribute('x', width / 2);
+        xLabel.setAttribute('y', height - 5);
+        xLabel.setAttribute('text-anchor', 'middle');
+        xLabel.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
+        xLabel.textContent = 'Speed (mph)';
+        svg.appendChild(xLabel);
+        
+        const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        yLabel.setAttribute('x', 15);
+        yLabel.setAttribute('y', height / 2);
+        yLabel.setAttribute('text-anchor', 'middle');
+        yLabel.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
+        yLabel.setAttribute('transform', `rotate(-90, 15, ${height/2})`);
+        yLabel.textContent = 'RPM';
+        svg.appendChild(yLabel);
+        
+        // Constants for calculations
+        const maxSpeed = 300; // mph
+        
+        // Function to convert speed and RPM to x,y coordinates
+        function toCoords(speed, rpm) {
+            const x = 50 + ((width - 80) * speed / maxSpeed);
+            const y = (height - 30) - ((height - 60) * (rpm - data.minRPM) / (data.maxRPM - data.minRPM));
+            return { x, y };
+        }
+        
+        // Draw gear lines
+        const gear_keys = Object.keys(data.gearRatios);
+        const colors = ['#FF3333', '#FFFF33', '#33FF33', '#33FFFF', '#3333FF', '#FF33FF'];
+        
+        gear_keys.forEach((gear, index) => {
+            const ratio = data.gearRatios[gear];
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            
+            // Calculate the gear line
+            let pathData = '';
+            
+            for (let rpm = data.minRPM; rpm <= data.maxRPM; rpm += 100) {
+                // Calculate speed at this RPM and gear
+                const speed = (rpm * Math.PI * data.tireDiameter) / (ratio * data.finalDrive * 1056);
+                
+                const point = toCoords(speed, rpm);
+                
+                if (pathData === '') {
+                    pathData = `M${point.x},${point.y}`;
+                } else {
+                    pathData += ` L${point.x},${point.y}`;
+                }
+            }
+            
+            path.setAttribute('d', pathData);
+            path.setAttribute('stroke', colors[index % colors.length]);
+            path.setAttribute('stroke-width', '2');
+            path.setAttribute('fill', 'none');
+            svg.appendChild(path);
+            
+            // Add gear label at the top of the line
+            const endPoint = toCoords((data.maxRPM * Math.PI * data.tireDiameter) / (ratio * data.finalDrive * 1056), data.maxRPM);
+            
+            const gearLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            gearLabel.setAttribute('x', endPoint.x);
+            gearLabel.setAttribute('y', endPoint.y - 10);
+            gearLabel.setAttribute('text-anchor', 'middle');
+            gearLabel.setAttribute('fill', colors[index % colors.length]);
+            gearLabel.textContent = gear;
+            svg.appendChild(gearLabel);
+        });
+        
+        // Add tickmarks for RPM
+        for (let rpm = data.minRPM; rpm <= data.maxRPM; rpm += 1000) {
+            const y = (height - 30) - ((height - 60) * (rpm - data.minRPM) / (data.maxRPM - data.minRPM));
+            
+            const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tick.setAttribute('x1', '45');
+            tick.setAttribute('y1', y);
+            tick.setAttribute('x2', '50');
+            tick.setAttribute('y2', y);
+            tick.setAttribute('stroke', 'rgba(255, 255, 255, 0.5)');
+            svg.appendChild(tick);
+            
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', '40');
+            label.setAttribute('y', y + 5);
+            label.setAttribute('text-anchor', 'end');
+            label.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
+            label.setAttribute('font-size', '10');
+            label.textContent = rpm.toString();
+            svg.appendChild(label);
+        }
+        
+        // Add tickmarks for speed
+        for (let speed = 0; speed <= maxSpeed; speed += 50) {
+            const x = 50 + ((width - 80) * speed / maxSpeed);
+            
+            const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tick.setAttribute('x1', x);
+            tick.setAttribute('y1', height - 30);
+            tick.setAttribute('x2', x);
+            tick.setAttribute('y2', height - 25);
+            tick.setAttribute('stroke', 'rgba(255, 255, 255, 0.5)');
+            svg.appendChild(tick);
+            
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', x);
+            label.setAttribute('y', height - 15);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
+            label.setAttribute('font-size', '10');
+            label.textContent = speed.toString();
+            svg.appendChild(label);
+        }
+        
+        // Clear any fallback message
+        container.innerHTML = '';
+        
+        // Append to container
+        container.appendChild(svg);
+        console.log('Gear graph rendered successfully');
+    } catch (error) {
+        console.error("Error rendering gear graph:", error);
+        const container = document.getElementById('gearGraph');
+        if (container) {
+            container.innerHTML = `<div class="alert alert-danger">Error rendering graph: ${error.message}</div>`;
+        }
+    }
+}
+</script>
+
+<script>
+function renderTorqueCurve() {
+  const torqueCurveData = window.torqueCurveData || [];
+  if (torqueCurveData.length === 0) {
+    console.log("No torque curve data available");
+    return;
+  }
+  
+  const container = document.getElementById('powerCurveGraph');
+  if (!container) {
+    console.error("Power curve container not found");
+    return;
+  }
+  
+  // Create SVG for torque curve visualization
+  // (Implementation details omitted for brevity)
+}
+
+// Call this function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  renderTorqueCurve();
+});
+// Add this code to the JavaScript block in complete_setup.html
+// Render torque curve from actual data points
+// Add this call to DOMContentLoaded event
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Complete setup page loaded');
+    
+    // Your existing DOMContentLoaded code here...
+    
+    // Call the torque curve rendering function
+    renderTorqueCurve();
+});
+</script>
+<script src="{% static 'js/torque-power-curves.js' %}"></script>
+
+{% endblock %}
