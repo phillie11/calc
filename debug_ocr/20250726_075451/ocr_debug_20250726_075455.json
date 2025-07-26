@@ -1,0 +1,17 @@
+{
+  "debug_info": {
+    "full_text": "RGT 4.2 '16\nDrivetrain RR / Aspiration TC\nEngine Model RUF386-RGT\n\nBase Performance\n\nPerformance Points\nMax. Power\n\nMax. Torque\nDisplacement\nWeight\n\nFront-Rear Weight Balance\n\nPROI999\n498 BHP\n50.1 kgfm\n4,187 cc\n1,464 kg\n41 : 59\n\nAcceleration Performance\n\n0-0.25 miles\n0-0.62 miles\n\n62-93 mph\nStability\nLow Speed\nHigh Speed\nRotational G\n40 mph\n75 mph\n\n150 mph\n\n12.33 sec.\n21.90 sec.\n3.23 sec.\n\n-0.25 (Neutral)\n-1.00 (Under)\n\n1.09 G\n1.146\n1.30 G\n\n@\u00ae Measure\n\nMeasurement\n\n\u00a9\nLt\n\nHistory\n\nam\n\nR1\n\n1st\n2nd\n3rd\n4th\n5th\n\n6th\n\nFinal\n\n-1.00\n\n1.09\n1.14\n1.30\n\nDownforce Lv. 200\n\nECU\n\nSettings Sheet 1\n\nAerodynamics\n\nFront\n\nFully Customisable\n\nManual Adjustment\n\n3.209 / 92\n\n2.487 / 119\n1.928 / 153\n1.494 / 198\n1.158 / 255\n0.897 / 338\n\n3.651\n\n13\n\n0: 100\n\n8,549 rpm\n\nN\n\ni V//\n\nRear\n\n450\n\n93\n\n64\n49\n70\n\n300\n\n+ Edit Settings Sheet\n\nTurbocharger\nAnti-Lag\nAnti-Lag System\nIntercooler\n\nSupercharger\n\nAir Cleaner\n\nSilencer\n\nExhaust Manifold\n\nBrake System\n\nBrake Pads\n\nHandbrake\n\nHandbrake Torque\n\nBrake Balance\n\nFront/Rear Balance\n\nSupercharger\n\nMedium-RPM\nNone\n\nOff\n\nNone\n\nNone\nIntake & Exhaust\n\nNormal\nSports\n\nNormal\nBrakes\n\nNormal\n\nRacing\n\nNormal\n\n%\n\nBrake Controller\n\n\u00a9 2025 Sony interactive Entertainment inc. Developed by Polyphony Digital inc.\n",
+    "gear_ratio": "1.928",
+    "rpm": "8,549",
+    "speed": "153",
+    "final_drive": "3.651",
+    "gear_section": "1st |\n2nd\n3rd\n4th\n5th\n6th"
+  },
+  "results": {
+    "gear_ratio": 1.928,
+    "rpm": 8549,
+    "speed": 153,
+    "final_drive": 3.651,
+    "gear_section": 6
+  }
+}

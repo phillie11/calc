@@ -601,9 +601,7 @@
 <button onclick="window.print()" class="btn btn-success btn-lg print-btn no-print">
     <i class="bi bi-printer"></i> Print / Save PDF
 </button>
-{% endblock %}
 
-{% block javascript %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Add handler for the Start New Setup button
@@ -989,41 +987,189 @@ function renderGearGraph(data) {
     }
 }
 </script>
-
 <script>
 function renderTorqueCurve() {
-  const torqueCurveData = window.torqueCurveData || [];
-  if (torqueCurveData.length === 0) {
-    console.log("No torque curve data available");
-    return;
-  }
-  
-  const container = document.getElementById('powerCurveGraph');
-  if (!container) {
-    console.error("Power curve container not found");
-    return;
-  }
-  
-  // Create SVG for torque curve visualization
-  // (Implementation details omitted for brevity)
+    try {
+        const torqueCurveData = window.torqueCurveData;
+        if (!torqueCurveData || !Array.isArray(torqueCurveData) || torqueCurveData.length === 0) {
+            console.log("No torque curve data available");
+            return;
+        }
+        
+        const container = document.getElementById('powerCurveGraph');
+        if (!container) {
+            console.error("Power curve container not found");
+            return;
+        }
+        
+        const width = container.clientWidth || 800;
+        const height = 400;
+        
+        // Create SVG
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', height);
+        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        svg.style.backgroundColor = '#000';
+        
+        const margin = { top: 20, right: 60, bottom: 50, left: 60 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+        
+        // Get data ranges
+        const rpmValues = torqueCurveData.map(d => d[0]);
+        const torqueValues = torqueCurveData.map(d => d[1]);
+        const minRPM = Math.min(...rpmValues);
+        const maxRPM = Math.max(...rpmValues);
+        const maxTorque = Math.max(...torqueValues);
+        
+        // Create scales
+        const xScale = (rpm) => margin.left + (rpm - minRPM) / (maxRPM - minRPM) * innerWidth;
+        const yScale = (torque) => margin.top + innerHeight - (torque / maxTorque) * innerHeight;
+        
+        // Draw axes
+        const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        xAxis.setAttribute('x1', margin.left);
+        xAxis.setAttribute('y1', margin.top + innerHeight);
+        xAxis.setAttribute('x2', margin.left + innerWidth);
+        xAxis.setAttribute('y2', margin.top + innerHeight);
+        xAxis.setAttribute('stroke', 'rgba(255, 255, 255, 0.8)');
+        svg.appendChild(xAxis);
+        
+        const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        yAxis.setAttribute('x1', margin.left);
+        yAxis.setAttribute('y1', margin.top);
+        yAxis.setAttribute('x2', margin.left);
+        yAxis.setAttribute('y2', margin.top + innerHeight);
+        yAxis.setAttribute('stroke', 'rgba(255, 255, 255, 0.8)');
+        svg.appendChild(yAxis);
+        
+        // Draw torque curve
+        const pathData = torqueCurveData.map(([rpm, torque], i) => 
+            `${i === 0 ? 'M' : 'L'} ${xScale(rpm)} ${yScale(torque)}`
+        ).join(' ');
+        
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathData);
+        path.setAttribute('stroke', '#ff6b6b');
+        path.setAttribute('stroke-width', '3');
+        path.setAttribute('fill', 'none');
+        svg.appendChild(path);
+        
+        // Add RPM ticks
+        const rpmStep = Math.ceil((maxRPM - minRPM) / 8 / 500) * 500;
+        for (let rpm = Math.ceil(minRPM / rpmStep) * rpmStep; rpm <= maxRPM; rpm += rpmStep) {
+            const x = xScale(rpm);
+            
+            const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tick.setAttribute('x1', x);
+            tick.setAttribute('y1', margin.top + innerHeight);
+            tick.setAttribute('x2', x);
+            tick.setAttribute('y2', margin.top + innerHeight + 5);
+            tick.setAttribute('stroke', 'rgba(255, 255, 255, 0.5)');
+            svg.appendChild(tick);
+            
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', x);
+            label.setAttribute('y', margin.top + innerHeight + 20);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
+            label.setAttribute('font-size', '10');
+            label.textContent = rpm.toString();
+            svg.appendChild(label);
+        }
+        
+        // Add torque Y-axis ticks
+        const torqueStep = Math.ceil(maxTorque / 6);
+        for (let torque = 0; torque <= maxTorque; torque += torqueStep) {
+            const y = yScale(torque);
+            
+            const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            tick.setAttribute('x1', margin.left - 5);
+            tick.setAttribute('y1', y);
+            tick.setAttribute('x2', margin.left);
+            tick.setAttribute('y2', y);
+            tick.setAttribute('stroke', 'rgba(255, 255, 255, 0.5)');
+            svg.appendChild(tick);
+            
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', margin.left - 10);
+            label.setAttribute('y', y + 3);
+            label.setAttribute('text-anchor', 'end');
+            label.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
+            label.setAttribute('font-size', '10');
+            label.textContent = Math.round(torque).toString();
+            svg.appendChild(label);
+        }
+        
+        // Add axis labels
+        const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        xLabel.setAttribute('x', margin.left + innerWidth / 2);
+        xLabel.setAttribute('y', height - 5);
+        xLabel.setAttribute('text-anchor', 'middle');
+        xLabel.setAttribute('fill', 'rgba(255, 255, 255, 0.8)');
+        xLabel.setAttribute('font-size', '12');
+        xLabel.textContent = 'RPM';
+        svg.appendChild(xLabel);
+        
+        const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        yLabel.setAttribute('x', 20);
+        yLabel.setAttribute('y', margin.top + innerHeight / 2);
+        yLabel.setAttribute('text-anchor', 'middle');
+        yLabel.setAttribute('fill', 'rgba(255, 255, 255, 0.8)');
+        yLabel.setAttribute('font-size', '12');
+        yLabel.setAttribute('transform', `rotate(-90, 20, ${margin.top + innerHeight / 2})`);
+        yLabel.textContent = 'Torque (kg⋅m)';
+        svg.appendChild(yLabel);
+        
+        container.innerHTML = '';
+        container.appendChild(svg);
+        console.log('Torque curve rendered successfully');
+    } catch (error) {
+        console.error("Error rendering torque curve:", error);
+        const container = document.getElementById('powerCurveGraph');
+        if (container) {
+            container.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+        }
+    }
 }
 
-// Call this function when the DOM is loaded
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
-  renderTorqueCurve();
-});
-// Add this code to the JavaScript block in complete_setup.html
-// Render torque curve from actual data points
-// Add this call to DOMContentLoaded event
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Complete setup page loaded');
+    // Expose torque data to window object
+    window.torqueCurveData = {% if torque_curve_data %}{{ torque_curve_data|safe }}{% else %}[]{% endif %};
     
-    // Your existing DOMContentLoaded code here...
+    const gearData = {% if gear_graph_data %}{{ gear_graph_data|safe }}{% else %}null{% endif %};
     
-    // Call the torque curve rendering function
-    renderTorqueCurve();
+    if (gearData && gearData.gearRatios && gearData.finalDrive) {
+        console.log("Rendering gear graph with data:", gearData);
+        renderGearGraph(gearData);
+    } else {
+        console.log("No gear data available for graph rendering");
+        const container = document.getElementById('gearGraph');
+        if (container) {
+            container.innerHTML = '<div class="text-center py-4 text-muted">No gear data available</div>';
+        }
+    }
+    
+    // Call torque curve rendering
+    if (window.torqueCurveData && window.torqueCurveData.length > 0) {
+        renderTorqueCurve();
+    }
 });
 </script>
+
 <script src="{% static 'js/torque-power-curves.js' %}"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== GRAPH DEBUG INFO ===');
+    console.log('Gear graph data:', {% if gear_graph_data %}{{ gear_graph_data|safe }}{% else %}null{% endif %});
+    console.log('Torque curve data:', {% if torque_curve_data %}{{ torque_curve_data|safe }}{% else %}null{% endif %});
+    console.log('Gear graph container exists:', !!document.getElementById('gearGraph'));
+    console.log('Power graph container exists:', !!document.getElementById('powerCurveGraph'));
+    console.log('=== END DEBUG ===');
+});
+</script>
 {% endblock %}
