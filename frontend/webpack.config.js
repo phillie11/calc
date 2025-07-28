@@ -7,7 +7,16 @@ module.exports = {
     rules: [
       {
         test: /\.(ts|tsx)$/,
-        use: 'ts-loader',
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              compilerOptions: {
+                jsx: 'react-jsx'
+              }
+            }
+          }
+        ],
         exclude: /node_modules/,
       },
       {
@@ -16,7 +25,11 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-react']
+            presets: [
+              ['@babel/preset-react', {
+                runtime: 'automatic'
+              }]
+            ]
           }
         }
       }
@@ -30,12 +43,16 @@ module.exports = {
     path: path.resolve(__dirname, '../static/js'),
     library: 'GT7Dashboard',
     libraryTarget: 'window',
-    libraryExport: 'default'
+    libraryExport: 'default',
+    clean: true
   },
   externals: {
     'react': 'React',
     'react-dom': 'ReactDOM',
     'recharts': 'Recharts',
     'lucide-react': 'LucideReact'
+  },
+  optimization: {
+    minimize: false // Disable minification for easier debugging
   }
 };
