@@ -2,6 +2,7 @@ const path = require('path');
 
 module.exports = {
   entry: './src/components/GT7Dashboard.tsx',
+  mode: 'production',
   module: {
     rules: [
       {
@@ -27,5 +28,14 @@ module.exports = {
   output: {
     filename: 'gt7_dashboard.js',
     path: path.resolve(__dirname, '../static/js'),
+    library: 'GT7Dashboard',
+    libraryTarget: 'window',
+    libraryExport: 'default'
   },
+  externals: {
+    'react': 'React',
+    'react-dom': 'ReactDOM',
+    'recharts': 'Recharts',
+    'lucide-react': 'LucideReact'
+  }
 };
